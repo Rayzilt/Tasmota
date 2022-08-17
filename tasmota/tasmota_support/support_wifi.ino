@@ -596,12 +596,22 @@ void WifiEnable(void) {
   Wifi.counter = 1;
 }
 
+#ifdef ESP8266
+#include <sntp.h>                       // sntp_servermode_dhcp()
+#endif  // ESP8266
+
 void WifiConnect(void)
 {
   if (!Settings->flag4.network_wifi) { return; }
 
   WifiSetState(0);
   WifiSetOutputPower();
+
+#ifdef ESP8266
+  // https://github.com/arendst/Tasmota/issues/16061#issuecomment-1216970170
+  sntp_servermode_dhcp(0);
+#endif  // ESP8266
+
   WiFi.persistent(false);     // Solve possible wifi init errors
   Wifi.status = 0;
   Wifi.retry_init = WIFI_RETRY_OFFSET_SEC + (ESP_getChipId() & 0xF);  // Add extra delay to stop overrun by simultanous re-connects
